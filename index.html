@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Calculator</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome CDN (for optional backspace icon) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        /* Custom styles for minor adjustments if needed */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            /* Fallback background if Tailwind doesn't load */
+            background-color: #111827; /* Equivalent to bg-gray-900 */
+        }
+
+        /* Custom scrollbar for display (optional) */
+        #display::-webkit-scrollbar {
+            height: 4px;
+        }
+        #display::-webkit-scrollbar-track {
+            background: #374151; /* bg-gray-700 */
+            border-radius: 2px;
+        }
+        #display::-webkit-scrollbar-thumb {
+            background: #6b7280; /* bg-gray-500 */
+            border-radius: 2px;
+        }
+        #display::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af; /* bg-gray-400 */
+        }
+
+        /* Slightly improve button press feedback */
+        .calculator-button:active {
+            transform: scale(0.96);
+            transition: transform 0.05s ease-in-out;
+        }
+
+        /* Style for keyboard press feedback */
+        .active-flash {
+             animation: flash 0.1s ease-out;
+        }
+         @keyframes flash {
+             0% { opacity: 1; }
+             50% { opacity: 0.7; transform: scale(0.98); }
+             100% { opacity: 1; transform: scale(1); }
+         }
+    </style>
+</head>
+<body class="bg-gray-900 flex items-center justify-center min-h-screen">
+
+    <div class="calculator-container bg-black w-full max-w-sm rounded-2xl shadow-2xl p-6 mx-4">
+
+        <!-- Display Screen -->
+        <div id="display-container" class="bg-gray-800 rounded-lg p-4 mb-6 text-right relative">
+             <!-- History display - slightly bolder text -->
+             <div id="history" class="text-gray-400 text-xs font-normal h-5 mb-1 overflow-hidden text-ellipsis whitespace-nowrap text-right"></div>
+            <!-- Main display - changed font-light to font-medium for bolder text -->
+            <input
+                type="text"
+                id="display"
+                class="w-full bg-transparent text-white text-5xl font-medium border-none outline-none text-right pr-1 overflow-x-auto"
+                value="0"
+                readonly
+                aria-label="Calculator Display"
+             >
+        </div>
+
+
+        <!-- Buttons Grid -->
+        <div class="grid grid-cols-4 gap-3">
+            <!-- Row 1 -->
+            <!-- AC button always performs full clear -->
+            <button class="calculator-button special bg-gradient-to-br from-gray-600 to-gray-700 hover:from-gray-500 hover:to-gray-600 text-white text-2xl p-4 rounded-lg shadow-md transition duration-200 ease-in-out" data-action="clear">AC</button>
+            <button class="calculator-button special bg-gradient-to-br from-gray-600 to-gray-700 hover:from-gray-500 hover:to-gray-600 text-white text-2xl p-4 rounded-lg shadow-md transition duration-200 ease-in-out" data-action="delete"><i class="fas fa-backspace"></i></button>
+             <button class="calculator-button operator bg-gradient-to-br from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white text-2xl p-4 rounded-lg shadow-md transition duration-200 ease-in-out" data-action="percent">%</button>
+            <button class="calculator-button operator bg-gradient-to-br from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white text-2xl p-4 rounded-lg shadow-md transition duration-200 ease-in-out" data-value="/">÷</button>
+
+            <!-- Row 2 -->
+            <button class="calculator-button number bg-gray-700 hover:bg-gray-600 text-white text-2xl p-4 rounded-lg shadow-md transition duration-200 ease-in-out" data-value="7">7</button>
+            <button class="calculator-button number bg-gray-700 hover:bg-gray-600 text-white text-2xl p-4 rounded-lg shadow-md transition duration-200 ease-in-out" data-value="8">8</button>
+            <button class="calculator-button number bg-gray-700 hover:bg-gray-600 text-white text-2xl p-4 rounded-lg shadow-md transition duration-200 ease-in-out" data-value="9">9</button>
+            <button class="calculator-button operator bg-gradient-to-br from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white text-2xl p-4 rounded-lg shadow-md transition duration-200 ease-in-out" data-value="*">×</button>
+
+            <!-- Row 3 -->
+            <button class="calculator-button number bg-gray-700 hover:bg-gray-600 text-white text-2xl p-4 rounded-lg shadow-md transition duration-200 ease-in-out" data-value="4">4</button>
+            <button class="calculator-button number bg-gray-700 hover:bg-gray-600 text-white text-2xl p-4 rounded-lg shadow-md transition duration-200 ease-in-out" data-value="5">5</button>
+            <button class="calculator-button number bg-gray-700 hover:bg-gray-600 text-white text-2xl p-4 rounded-lg shadow-md transition duration-200 ease-in-out" data-value="6">6</button>
+            <button class="calculator-button operator bg-gradient-to-br from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white text-2xl p-4 rounded-lg shadow-md transition duration-200 ease-in-out" data-value="-">−</button>
+
+            <!-- Row 4 -->
+            <button class="calculator-button number bg-gray-700 hover:bg-gray-600 text-white text-2xl p-4 rounded-lg shadow-md transition duration-200 ease-in-out" data-value="1">1</button>
+            <button class="calculator-button number bg-gray-700 hover:bg-gray-600 text-white text-2xl p-4 rounded-lg shadow-md transition duration-200 ease-in-out" data-value="2">2</button>
+            <button class="calculator-button number bg-gray-700 hover:bg-gray-600 text-white text-2xl p-4 rounded-lg shadow-md transition duration-200 ease-in-out" data-value="3">3</button>
+            <button class="calculator-button operator bg-gradient-to-br from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white text-2xl p-4 rounded-lg shadow-md transition duration-200 ease-in-out" data-value="+">+</button>
+
+            <!-- Row 5 -->
+            <button class="calculator-button number col-span-2 bg-gray-700 hover:bg-gray-600 text-white text-2xl p-4 rounded-lg shadow-md transition duration-200 ease-in-out" data-value="0">0</button>
+            <button class="calculator-button number bg-gray-700 hover:bg-gray-600 text-white text-2xl p-4 rounded-lg shadow-md transition duration-200 ease-in-out" data-value=".">.</button>
+            <button class="calculator-button equals bg-gradient-to-br from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-2xl p-4 rounded-lg shadow-md transition duration-200 ease-in-out" data-action="calculate">=</button>
+        </div>
+    </div>
+
+    <script>
+        const display = document.getElementById('display');
+        const historyDisplay = document.getElementById('history');
+        const buttons = document.querySelectorAll('.calculator-button');
+
+        let currentInput = '0';
+        let operator = null;
+        let previousInput = null;
+        let shouldResetDisplay = false;
+        let calculationHistory = '';
+
+        function updateDisplay() {
+            // Basic formatting (commas for thousands) for better readability
+            try {
+                let valueToDisplay = currentInput;
+                 // Limit display length to avoid overflow issues visually
+                const maxLength = 15; // Adjust based on font size and display width
+                if (valueToDisplay.length > maxLength) {
+                     if (valueToDisplay.includes('e')) {
+                         // Try to keep scientific notation readable
+                         valueToDisplay = parseFloat(valueToDisplay).toExponential(9);
+                     } else {
+                        // Let overflow-x handle very long numbers for now
+                     }
+                }
+
+                // Handle potential 'Error' state
+                if (valueToDisplay === 'Error' || valueToDisplay === 'Infinity' || valueToDisplay === '-Infinity' || valueToDisplay === 'NaN') { // Added NaN check
+                   display.value = 'Error';
+                   display.classList.remove('text-5xl', 'text-4xl'); // Reset font size on error
+                   display.classList.add('text-5xl'); // Or a specific error size if desired
+                } else {
+                    // Format numbers with commas, handle decimals carefully
+                    const parts = valueToDisplay.split('.');
+                    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                    display.value = parts.join('.');
+
+                    // Adjust font size slightly if number gets very long
+                     if (display.value.length > 10) { // Threshold for font size change
+                         display.classList.remove('text-5xl');
+                         display.classList.add('text-4xl');
+                     } else {
+                         display.classList.remove('text-4xl');
+                         display.classList.add('text-5xl');
+                     }
+                }
+
+            } catch (e) {
+                display.value = 'Error'; // Fallback error display
+                display.classList.remove('text-4xl'); // Reset font on error
+                display.classList.add('text-5xl');
+            }
+
+             // Update history display
+             historyDisplay.textContent = calculationHistory;
+             historyDisplay.scrollLeft = historyDisplay.scrollWidth; // Scroll to end if it overflows
+        }
+
+        // Function to completely clear the calculator state
+        function clearAll() {
+            currentInput = '0';
+            operator = null;
+            previousInput = null;
+            shouldResetDisplay = false;
+            calculationHistory = '';
+            updateDisplay();
+            // No need to change AC button text anymore
+        }
+
+        function deleteLast() {
+            if (currentInput === 'Error' || currentInput === 'Infinity' || currentInput === '-Infinity' || currentInput === 'NaN') {
+                clearAll(); // Clear if in error state
+                return;
+            }
+            if (currentInput.length > 1) {
+                currentInput = currentInput.slice(0, -1);
+            } else {
+                currentInput = '0'; // If only one digit left, reset to '0'
+            }
+            updateDisplay();
+        }
+
+        function handleNumber(value) {
+            if (currentInput === '0' || shouldResetDisplay) {
+                currentInput = value;
+                shouldResetDisplay = false;
+            } else {
+                 // Limit input length slightly more strictly during input
+                 if (currentInput.replace(/,/g, '').length >= 15) return;
+                 currentInput += value;
+            }
+            // No longer need to change AC to C
+        }
+
+        function handleDecimal() {
+            if (shouldResetDisplay) {
+                currentInput = '0.';
+                shouldResetDisplay = false;
+                return;
+            }
+            // Prevent multiple decimals
+            if (!currentInput.includes('.')) {
+                currentInput += '.';
+            }
+            // No longer need to change AC to C
+        }
+
+         function handleOperator(nextOperator) {
+            // Handle chained operations: 5 * 2 + -> calculate 5*2 first
+            // Perform calculation only if previousInput, operator, and currentInput are ready
+             if (operator && previousInput !== null && !shouldResetDisplay) {
+                calculate();
+                // After calculation, result is in currentInput, ready for next op
+            }
+
+            // Allow changing operator if pressed consecutively: 5 * + 3 -> use +
+            // Or if starting fresh after an error
+             if (currentInput !== 'Error' && currentInput !== 'NaN') {
+                // Store the current value (or result of previous calc) as previousInput
+                previousInput = currentInput;
+                operator = nextOperator;
+                shouldResetDisplay = true; // Expecting next number input
+                // Update history
+                calculationHistory = `${formatNumberForHistory(previousInput)} ${getOperatorSymbol(operator)}`;
+            } else if (currentInput === 'Error' || currentInput === 'NaN'){
+                 clearAll(); // Reset if trying to operate on an error
+             }
+        }
+
+         function handlePercent() {
+             if (currentInput === 'Error' || currentInput === 'NaN') return;
+             try {
+                 const numericValue = parseFloat(currentInput.replace(/,/g, ''));
+                 if (isNaN(numericValue)) return; // Do nothing if current input isn't a valid number
+
+                 let resultValue;
+                 if (previousInput && operator) {
+                     // Calculate percentage relative to the previous input (e.g., 100 + 10% means 100 + (100 * 10 / 100))
+                     const prevValue = parseFloat(previousInput.replace(/,/g, ''));
+                     const percentageOfPrev = (prevValue * numericValue) / 100;
+                     resultValue = percentageOfPrev;
+                     // Update history to show percentage calculation applied
+                      calculationHistory = `${formatNumberForHistory(previousInput)} ${getOperatorSymbol(operator)} ${numericValue}%`;
+                 } else {
+                     // Simple percentage (e.g., 50% = 0.5)
+                     resultValue = (numericValue / 100);
+                     // Update history
+                      calculationHistory = `${numericValue}%`;
+                 }
+                 currentInput = resultValue.toString();
+                 shouldResetDisplay = true; // Result is final until next input or operation
+                 operator = null; // Percentage calculation usually completes the thought
+                 previousInput = null;
+                 updateDisplay();
+                 // Clear history after showing the immediate result? Let's keep it until next op.
+             } catch (e) {
+                 currentInput = 'Error';
+                 calculationHistory = '';
+                 updateDisplay();
+             }
+         }
+
+         function getOperatorSymbol(op) {
+             switch (op) {
+                 case '+': return '+';
+                 case '-': return '−';
+                 case '*': return '×';
+                 case '/': return '÷';
+                 default: return '';
+             }
+         }
+
+         function formatNumberForHistory(numStr) {
+             if (numStr === null || numStr === undefined) return '';
+             // Basic formatting, remove commas for consistency in history
+             return numStr.replace(/,/g, '');
+         }
+
+
+        function calculate() {
+             // Check if we have enough information to calculate
+             if (operator === null || previousInput === null || currentInput === 'Error' || currentInput === 'NaN') {
+                 return; // Nothing valid to calculate
+             }
+             // Prevent calculation if shouldResetDisplay is true (meaning an operator was just pressed, waiting for second operand)
+             // unless it's a repeated equals press scenario (which we are currently not implementing)
+             if (shouldResetDisplay) return;
+
+
+            let result;
+            // Remove commas before parsing
+            const prev = parseFloat(previousInput.replace(/,/g, ''));
+            const current = parseFloat(currentInput.replace(/,/g, ''));
+
+             // Update history *before* calculation, showing the full expression
+             calculationHistory = `${formatNumberForHistory(previousInput)} ${getOperatorSymbol(operator)} ${formatNumberForHistory(currentInput)} =`;
+
+
+            if (isNaN(prev) || isNaN(current)) {
+                currentInput = 'Error';
+                calculationHistory = ''; // Clear history on error input
+                updateDisplay();
+                return;
+            }
+
+            try {
+                switch (operator) {
+                    case '+':
+                        result = prev + current;
+                        break;
+                    case '-':
+                        result = prev - current;
+                        break;
+                    case '*':
+                        result = prev * current;
+                        break;
+                    case '/':
+                        if (current === 0) {
+                            throw new Error("Division by zero");
+                        }
+                        result = prev / current;
+                        break;
+                    default:
+                         console.warn("Unknown operator:", operator); // Log unexpected state
+                        return; // Should not happen
+                }
+
+                 // Handle potential floating point inaccuracies for simple cases
+                 // Example: Round to a reasonable number of decimal places to avoid long trails
+                 if (result.toString().includes('.')) {
+                      // Check magnitude to decide between fixed and exponential
+                      if (Math.abs(result) > 1e15 || (Math.abs(result) < 1e-10 && result !== 0) ) {
+                         result = result.toExponential(9);
+                      } else {
+                         result = parseFloat(result.toFixed(10)); // Adjust precision as needed
+                      }
+                 }
+
+                 if (!isFinite(result)) {
+                     throw new Error("Result is Infinity");
+                 }
+
+                currentInput = result.toString();
+
+            } catch (error) {
+                console.error("Calculation Error:", error.message);
+                currentInput = 'Error';
+                calculationHistory = ''; // Clear history on calculation error
+            } finally {
+                // Reset for the next operation after equals '='
+                operator = null;
+                previousInput = currentInput; // Store result as previous input for potential chaining (e.g. 5 + 2 = 7, then + 3 = 10) - let's disable this for simplicity for now.
+                // previousInput = null; // Standard calculator behavior: after '=', the next number starts a new calculation. Let's keep this standard behavior.
+                previousInput = null;
+                shouldResetDisplay = true; // Next number input should clear the display
+                updateDisplay();
+                 // calculationHistory remains showing the last full operation
+            }
+        }
+
+        // Event Listener using Event Delegation
+        document.querySelector('.grid').addEventListener('click', (event) => {
+            const target = event.target.closest('button'); // Handle clicks on button or icon inside
+            if (!target) return; // Clicked outside a button
+
+            const { value, action } = target.dataset;
+
+            if (value !== undefined) { // It's a number, operator, or decimal
+                if (target.classList.contains('number') || value === '.') {
+                    if (value === '.') {
+                        handleDecimal();
+                    } else {
+                        handleNumber(value);
+                    }
+                } else if (target.classList.contains('operator')) {
+                    handleOperator(value);
+                }
+                updateDisplay(); // Update display after handling number, decimal, or operator
+            } else if (action !== undefined) { // It's a special action
+                switch (action) {
+                    case 'clear':
+                        // AC button now *always* calls clearAll directly
+                        clearAll();
+                        break;
+                    case 'delete':
+                        deleteLast();
+                        // updateDisplay is called within deleteLast
+                        break;
+                     case 'percent':
+                         handlePercent();
+                         // updateDisplay is called within handlePercent
+                         break;
+                    case 'calculate':
+                        calculate();
+                        // updateDisplay is called within calculate
+                        break;
+                }
+            }
+        });
+
+         // Keyboard Support
+         document.addEventListener('keydown', (event) => {
+             const key = event.key;
+             let buttonToClick = null;
+
+             if (key >= '0' && key <= '9') {
+                 buttonToClick = document.querySelector(`.calculator-button[data-value="${key}"]`);
+             } else if (key === '.') {
+                 buttonToClick = document.querySelector(`.calculator-button[data-value="."]` );
+             } else if (['+', '-', '*', '/'].includes(key)) {
+                  const operatorValue = key === '*' ? '*' : key === '/' ? '/' : key; // Match dataset value
+                  buttonToClick = document.querySelector(`.calculator-button.operator[data-value="${operatorValue}"]`);
+             } else if (key === 'Enter' || key === '=') {
+                  event.preventDefault(); // Prevent potential form submission
+                  buttonToClick = document.querySelector('.calculator-button[data-action="calculate"]');
+             } else if (key === 'Backspace') {
+                  buttonToClick = document.querySelector('.calculator-button[data-action="delete"]');
+             } else if (key === 'Escape' || key.toLowerCase() === 'c') {
+                  // Both Escape and 'c' now trigger All Clear (AC)
+                  event.preventDefault(); // Prevent browser default action for Escape if any
+                  buttonToClick = document.querySelector('.calculator-button[data-action="clear"]');
+             } else if (key === '%') {
+                 buttonToClick = document.querySelector('.calculator-button[data-action="percent"]');
+             }
+
+             if (buttonToClick) {
+                 buttonToClick.click(); // Simulate button click
+                 // Add visual feedback for keyboard press
+                 buttonToClick.classList.add('active-flash');
+                 setTimeout(() => buttonToClick.classList.remove('active-flash'), 100);
+             }
+         });
+
+        // Initial display update on load
+        updateDisplay();
+
+    </script>
+
+</body>
+</html>
